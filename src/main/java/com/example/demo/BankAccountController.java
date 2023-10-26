@@ -111,6 +111,7 @@ public class BankAccountController implements ApplicationListener<ApplicationRea
     //My code Added a new end point.
     //To call teh API: curl --location --request GET 'http://localhost:8080/totalBalance' | jq
 
+
     @GetMapping("/totalBalance")
     public ResponseEntity<BigDecimal> getTotalBankBalance() {
         
