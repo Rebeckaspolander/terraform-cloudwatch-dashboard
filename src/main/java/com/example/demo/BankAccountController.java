@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,13 +80,14 @@ public class BankAccountController implements ApplicationListener<ApplicationRea
         Account account = ofNullable(theBank.get(accountId)).orElseThrow(AccountNotFoundException::new);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
-
+    
     private Account getOrCreateAccount(String accountId) {
         if (theBank.get(accountId) == null) {
             Account a = new Account();
             a.setId(accountId);
             theBank.put(accountId, a);
         }
+        
         return theBank.get(accountId);
     }
 
@@ -104,4 +107,24 @@ public class BankAccountController implements ApplicationListener<ApplicationRea
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "account not found")
     public static class AccountNotFoundException extends RuntimeException {
     }
+    
+    //My code Added a new end point.
+    //To call teh API: curl --location --request GET 'http://localhost:8080/totalBalance' | jq
+
+    @GetMapping("/totalBalance")
+    public ResponseEntity<BigDecimal> getTotalBankBalance() {
+        
+        meterRegistry.counter("total_balance").increment();
+    
+        // Calculate the total balance by summing up the balances of all accounts
+        BigDecimal totalBalance = theBank.values()
+                .stream()
+                .map(Account::getBalance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+         System.out.println("API endpoint called: /totalBalance");
+    
+        return new ResponseEntity<>(totalBalance, HttpStatus.OK);
+    }
+ 
+
 }
